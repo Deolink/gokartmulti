@@ -23,8 +23,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-
-
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -34,7 +32,8 @@ private:
 
 	void MoveRight(float Value);
 
-	FVector GetResistance();
+	FVector GetAirResistance();
+	FVector GetRollingResistance();
 	void UpdateLocationFromVelocity(float DeltaTime);
 	void ApplyRotation(float DeltaTime);
 
@@ -53,6 +52,10 @@ private:
 	// Higher means more drag (kg/s)
 	UPROPERTY(EditAnywhere)
 	float DragCoeficient = 16;
+
+	// Higher means more rolling resistance (kg/s)
+	UPROPERTY(EditAnywhere)
+	float RollingResistanceCoeficient = 0.015;
 
 	FVector Velocity;
 
