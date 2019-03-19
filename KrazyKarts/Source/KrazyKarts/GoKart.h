@@ -34,6 +34,10 @@ private:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_MoveRight(float Value);
 
+	
+	void MoveForward(float Value);	
+	void MoveRight(float Value);
+
 	FVector GetAirResistance();
 	FVector GetRollingResistance();
 	void UpdateLocationFromVelocity(float DeltaTime);
@@ -62,6 +66,8 @@ private:
 	// Higher means more rolling resistance (kg/s)
 	UPROPERTY(EditAnywhere)
 	float RollingResistanceCoeficient = 0.015;
+
+
 
 	FVector Velocity;
 
