@@ -61,6 +61,9 @@ public:
 
 	
 private:
+	UFUNCTION()
+	void SimulateMove(FGoKartMove Move);
+
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_SendMove(FGoKartMove Move);
 	
@@ -70,7 +73,7 @@ private:
 	FVector GetAirResistance();
 	FVector GetRollingResistance();
 	void UpdateLocationFromVelocity(float DeltaTime);
-	void ApplyRotation(float DeltaTime);
+	void ApplyRotation(float DeltaTime, float SteeringThrow);
 
 	// The mass of the car (kg).
 	UPROPERTY(EditAnywhere)
@@ -104,8 +107,8 @@ private:
 	UFUNCTION()
 	void OnRep_ServerState();
 
-	UPROPERTY(Replicated)
+
 	float Throttle;
-	UPROPERTY(Replicated)
+
 	float SteeringThrow;
 };
