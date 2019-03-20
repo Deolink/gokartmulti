@@ -61,6 +61,7 @@ void AGoKart::Tick(float DeltaTime)
 		// TODO Set time
 
 		Server_SendMove(Move);
+		SimulateMove(Move);
 	}
 	
 
@@ -73,7 +74,7 @@ void AGoKart::OnRep_ServerState()
 	Velocity = ServerState.Velocity;
 }
 
-void SimulateMove(FGoKartMove Move)
+void AGoKart::SimulateMove(FGoKartMove Move)
 {
 	FVector Force = GetActorForwardVector() * MaxDrivingForce * Move.Throttle;
 
