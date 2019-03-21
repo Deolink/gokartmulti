@@ -63,7 +63,7 @@ public:
 	
 private:
 	UFUNCTION()
-	void SimulateMove(FGoKartMove Move);
+	void SimulateMove(const FGoKartMove& Move);
 
 	FGoKartMove CreateMove(float DeltaTime);
 
