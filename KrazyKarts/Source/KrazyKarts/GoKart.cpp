@@ -5,12 +5,16 @@
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
 #include "UnrealNetwork.h"
+#include "GameFramework/GameStateBase.h"
+
 // Sets default values
 AGoKart::AGoKart()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
+
+	
 }
 
 // Called when the game starts or when spawned
@@ -106,7 +110,10 @@ FGoKartMove AGoKart::CreateMove(float DeltaTime)
 	Move.DeltaTime = DeltaTime;
 	Move.SteeringThrow = SteeringThrow;
 	Move.Throttle = Throttle;
-	Move.Time = GetWorld()->TimeSeconds;
+
+	AGameStateBase* GameState = GetWorld()->GetGameState();
+
+	Move.Time = GameState->GetServerWorldTimeSeconds();
 
 	return Move;
 }

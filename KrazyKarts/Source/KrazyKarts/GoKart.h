@@ -6,6 +6,7 @@
 #include "GameFramework/Pawn.h"
 #include "GoKart.generated.h"
 
+
 USTRUCT()
 struct FGoKartMove
 {
