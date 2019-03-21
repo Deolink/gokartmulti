@@ -64,6 +64,10 @@ private:
 	UFUNCTION()
 	void SimulateMove(FGoKartMove Move);
 
+	FGoKartMove CreateMove(float DeltaTime);
+
+	void ClearAknowledgedMoves(FGoKartMove LastMove);
+
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_SendMove(FGoKartMove Move);
 	
@@ -111,4 +115,6 @@ private:
 	float Throttle;
 
 	float SteeringThrow;
+
+	TArray<FGoKartMove> UnknowledgeMoves;
 };
