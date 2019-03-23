@@ -51,7 +51,11 @@ public:
 
 	void SetThrottle(float Val) { Throttle = Val; };
 	void SetSteeringThrow(float Val) { SteeringThrow = Val; };
+
+	
 private:
+
+	FGoKartMove GetLastMove() { return LastMove; };
 
 	FVector GetAirResistance();
 	FVector GetRollingResistance();
@@ -88,6 +92,6 @@ private:
 
 	float SteeringThrow;
 
-
+	FGoKartMove LastMove;
 		
 };
