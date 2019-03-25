@@ -37,13 +37,8 @@ public:
 	
 private:
 
-	
-
-	
 	void MoveForward(float Value);	
-	void MoveRight(float Value);
-
-	
+	void MoveRight(float Value);	
 
 	UPROPERTY(VisibleAnywhere)
 	UGoKartMovementComponent* MovementComponent;
