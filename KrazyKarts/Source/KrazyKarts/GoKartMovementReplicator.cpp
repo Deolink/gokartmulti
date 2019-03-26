@@ -18,8 +18,7 @@ void UGoKartMovementReplicator::BeginPlay()
 {
 	Super::BeginPlay();
 
-	MovementComponent = GetOwner()->FindComponentByClass<UGoKartMovementComponent>();
-	
+	MovementComponent = GetOwner()->FindComponentByClass<UGoKartMovementComponent>();	
 }
 
 
@@ -33,8 +32,7 @@ void UGoKartMovementReplicator::TickComponent(float DeltaTime, ELevelTick TickTy
 	FGoKartMove LastMove = MovementComponent->GetLastMove();
 
 	if (GetOwnerRole() == ROLE_AutonomousProxy)
-	{
-		
+	{		
 		UnknowledgeMoves.Add(LastMove);
 		Server_SendMove(LastMove);
 	}
@@ -61,43 +59,61 @@ void UGoKartMovementReplicator::UpdateServerState(const FGoKartMove& Move)
 
 void UGoKartMovementReplicator::ClientTick(float DeltaTime)
 {
-
-	/// Location Client
-
 	ClientTimeSinceUpdate += DeltaTime;
 
 	if (ClientTimeBetweenUpdate < KINDA_SMALL_NUMBER) return;
 	if (MovementComponent == nullptr) return;
 
-	FVector TargetLocation = ServerState.Transform.GetLocation();
-	float LerpRatio = ClientTimeSinceUpdate / ClientTimeBetweenUpdate;
-	FVector StartLocation = ClientStartTransform.GetLocation();
-	float VelocityToDerivative = ClientTimeBetweenUpdate * 100;
+	float LerpRatio = ClientTimeSinceUpdate / ClientTimeBetweenUpdate;	
 
-	FVector StartDerivative = ClientStartVelocity * VelocityToDerivative;
-	FVector TargetDerivative = ServerState.Velocity * VelocityToDerivative;
+	FHermitCubicSpline Spline = CreateSpline();
+
+	/// interp location
+	InterpolateLocation(Spline, LerpRatio);
+	/// interp velocity
+	InterpolateVelocity(Spline, LerpRatio);	
+	/// interp Rotation Client
+	InterpolateRotation(LerpRatio);
+}
 
 
-	FVector NewLocation = FMath::CubicInterp(StartLocation, StartDerivative, TargetLocation, TargetDerivative, LerpRatio);
+FHermitCubicSpline UGoKartMovementReplicator::CreateSpline()
+{
+	FHermitCubicSpline Spline;
+	Spline.TargetLocation = ServerState.Transform.GetLocation();
+	Spline.StartLocation = ClientStartTransform.GetLocation();
+	Spline.StartDerivative = ClientStartVelocity * VelocityToDerivative();
+	Spline.TargetDerivative = ServerState.Velocity * VelocityToDerivative();
 
+	return Spline;
+}
+
+void UGoKartMovementReplicator::InterpolateLocation(const FHermitCubicSpline& Spline, float LerpRatio)
+{
+	FVector NewLocation = Spline.InterpolateLocation(LerpRatio);
 	GetOwner()->SetActorLocation(NewLocation);
+}
 
-	FVector NewDerivative = FMath::CubicInterpDerivative(StartLocation, StartDerivative, TargetLocation, TargetDerivative, LerpRatio);
-	FVector NewVelocity = NewDerivative / VelocityToDerivative;
+void UGoKartMovementReplicator::InterpolateVelocity(const FHermitCubicSpline& Spline, float LerpRatio)
+{
+	FVector NewDerivative = Spline.InterpolateDerivative(LerpRatio);
+	FVector NewVelocity = NewDerivative / VelocityToDerivative();
 	MovementComponent->SetVelocity(NewVelocity);
-	/// Rotation Client
+}
 
-
-
+void UGoKartMovementReplicator::InterpolateRotation(float LerpRatio)
+{
 	FQuat TargetRotation = ServerState.Transform.GetRotation();
-
 	FQuat StartRotation = ClientStartTransform.GetRotation();
-
 	FQuat NewRotation = FQuat::Slerp(StartRotation, TargetRotation, LerpRatio);
-
 	GetOwner()->SetActorRotation(NewRotation);
 }
 
+float UGoKartMovementReplicator::VelocityToDerivative()
+{
+	float VelocityToDerivative = ClientTimeBetweenUpdate * 100;
+	return VelocityToDerivative;
+}
 
 void UGoKartMovementReplicator::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {
@@ -127,7 +143,6 @@ void UGoKartMovementReplicator::SimulatedProxy_OnRep_ServerState()
 
 	ClientTimeBetweenUpdate = ClientTimeSinceUpdate;
 	ClientTimeSinceUpdate = 0;
-
 	ClientStartTransform = GetOwner()->GetActorTransform();
 	ClientStartVelocity = MovementComponent->GetVelocity();
 }
@@ -140,9 +155,6 @@ void UGoKartMovementReplicator::AutonomousProxy_OnRep_ServerState()
 	MovementComponent->SetVelocity(ServerState.Velocity);
 
 	ClearAknowledgedMoves(ServerState.LastMove);
-
-
-
 	for (const FGoKartMove& Move : UnknowledgeMoves)
 	{
 		MovementComponent->SimulateMove(Move);
@@ -169,9 +181,7 @@ void UGoKartMovementReplicator::Server_SendMove_Implementation(FGoKartMove Move)
 {
 	if (MovementComponent == nullptr) return;
 
-	MovementComponent->SimulateMove(Move);
-
-	
+	MovementComponent->SimulateMove(Move);	
 }
 
 bool UGoKartMovementReplicator::Server_SendMove_Validate(FGoKartMove Move)
