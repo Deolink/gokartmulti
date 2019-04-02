@@ -3,6 +3,7 @@
 #include "GoKartMovementReplicator.h"
 #include "UnrealNetwork.h"
 #include "GameFramework/Actor.h"
+#include "Engine/World.h"
 // Sets default values for this component's properties
 UGoKartMovementReplicator::UGoKartMovementReplicator()
 {
@@ -214,7 +215,7 @@ bool UGoKartMovementReplicator::Server_SendMove_Validate(FGoKartMove Move)
 		return false;
 	}
 
-	if (Move.IsValid())
+	if (!Move.IsValid())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Received invalid move"));
 		return false;
